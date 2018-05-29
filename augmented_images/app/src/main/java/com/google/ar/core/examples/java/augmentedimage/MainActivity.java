@@ -5,8 +5,6 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.ar.core.ArCoreApk;
@@ -15,8 +13,8 @@ import com.google.ar.core.AugmentedImageDatabase;
 import com.google.ar.core.Config;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Session;
+import com.google.ar.core.TrackingState;
 import com.google.ar.core.examples.java.augmentedimage.sceneform.AugmentedImageNode;
-
 import com.google.ar.core.examples.java.common.helpers.CameraPermissionHelper;
 import com.google.ar.core.examples.java.common.helpers.FullScreenHelper;
 import com.google.ar.core.examples.java.common.helpers.SnackbarHelper;
@@ -31,15 +29,12 @@ import com.google.ar.sceneform.FrameTime;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
-public class AugmentedImageActivity extends AppCompatActivity {
-    private static final String TAG = AugmentedImageActivity.class.getSimpleName();
+public class MainActivity extends AppCompatActivity {
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     // Rendering. The Renderers are created here, and initialized when the GL surface is created.
     private ArSceneView arSceneView;
-    private ImageView fitToScanView;
 
     private boolean installRequested;
 
@@ -48,16 +43,12 @@ public class AugmentedImageActivity extends AppCompatActivity {
 
     private boolean shouldConfigureSession = false;
 
-    // Augmented image configuration and rendering.
-    private final Map<AugmentedImage, AugmentedImageNode> augmentedImageMap = new HashMap<>();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         arSceneView = findViewById(R.id.surfaceview);
-        fitToScanView = findViewById(R.id.image_view_fit_to_scan);
 
         installRequested = false;
 
@@ -130,7 +121,6 @@ public class AugmentedImageActivity extends AppCompatActivity {
             session = null;
             return;
         }
-        fitToScanView.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -173,62 +163,46 @@ public class AugmentedImageActivity extends AppCompatActivity {
         Frame frame = arSceneView.getArFrame();
         Collection<AugmentedImage> updatedAugmentedImages =
                 frame.getUpdatedTrackables(AugmentedImage.class);
+
         for (AugmentedImage augmentedImage : updatedAugmentedImages) {
-            switch (augmentedImage.getTrackingState()) {
-                case PAUSED:
-                    // When an image is in PAUSED state, but the camera is not PAUSED, it has been detected,
-                    // but not yet tracked.
-                    break;
+            if (augmentedImage.getTrackingState() == TrackingState.TRACKING) {
+                // Check camera image matches our reference image
+                if (augmentedImage.getName().equals("delorean")) {
+                    AugmentedImageNode node = new AugmentedImageNode(this, "model.sfb");
+                    node.setImage(augmentedImage);
+                    arSceneView.getScene().addChild(node);
+                }
 
-                case TRACKING:
-                    // Have to switch to UI Thread to update View.
-                    fitToScanView.setVisibility(View.GONE);
-
-                    // Create a new anchor for newly found images.
-                    if (!augmentedImageMap.containsKey(augmentedImage)) {
-                        AugmentedImageNode node = new AugmentedImageNode(this);
-                        node.setImage(augmentedImage);
-                        augmentedImageMap.put(augmentedImage, node);
-                        arSceneView.getScene().addChild(node);
-                    }
-                    break;
-
-                case STOPPED:
-                    augmentedImageMap.remove(augmentedImage);
-                    break;
-
-                default:
-                    break;
             }
         }
     }
 
     private void configureSession() {
         Config config = new Config(session);
-        if (!setupAugmentedImageDatabase(config)) {
+        if (!setupAugmentedImageDb(config)) {
             messageSnackbarHelper.showError(this, "Could not setup augmented image database");
         }
         config.setUpdateMode(Config.UpdateMode.LATEST_CAMERA_IMAGE);
         session.configure(config);
     }
 
-    private boolean setupAugmentedImageDatabase(Config config) {
+    private boolean setupAugmentedImageDb(Config config) {
         AugmentedImageDatabase augmentedImageDatabase;
 
-        Bitmap augmentedImageBitmap = loadAugmentedImageBitmap();
+        Bitmap augmentedImageBitmap = loadAugmentedImage();
         if (augmentedImageBitmap == null) {
             return false;
         }
 
         augmentedImageDatabase = new AugmentedImageDatabase(session);
-        augmentedImageDatabase.addImage("targetImage", augmentedImageBitmap);
+        augmentedImageDatabase.addImage("delorean", augmentedImageBitmap);
 
         config.setAugmentedImageDatabase(augmentedImageDatabase);
         return true;
     }
 
-    private Bitmap loadAugmentedImageBitmap() {
-        try (InputStream is = getAssets().open("default.jpg")) {
+    private Bitmap loadAugmentedImage() {
+        try (InputStream is = getAssets().open("delorean.jpg")) {
             return BitmapFactory.decodeStream(is);
         } catch (IOException e) {
             Log.e(TAG, "IO exception loading augmented image bitmap.", e);

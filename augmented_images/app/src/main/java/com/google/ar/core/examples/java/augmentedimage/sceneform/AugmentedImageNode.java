@@ -22,11 +22,11 @@ public class AugmentedImageNode extends AnchorNode {
     private AugmentedImage image;
     private static CompletableFuture<ModelRenderable> modelFuture;
 
-    public AugmentedImageNode(Context context) {
+    public AugmentedImageNode(Context context, String filename) {
         // Upon construction, start loading the modelFuture
         if (modelFuture == null) {
             modelFuture = ModelRenderable.builder().setRegistryId("modelFuture")
-                    .setSource(context, Uri.parse("NOVELO_EARTH.sfb"))
+                    .setSource(context, Uri.parse(filename))
                     .build();
         }
     }
@@ -35,7 +35,7 @@ public class AugmentedImageNode extends AnchorNode {
      * Called when the AugmentedImage is detected and should be rendered. A Sceneform node tree is
      * created based on an Anchor created from the image.
      *
-     * @param image
+     * @param image captured by your camera
      */
     public void setImage(AugmentedImage image) {
         this.image = image;
@@ -53,7 +53,7 @@ public class AugmentedImageNode extends AnchorNode {
 
         Node node = new Node();
 
-        Pose pose = Pose.makeTranslation(0.0f, 0.0f, 0.0f);
+        Pose pose = Pose.makeTranslation(0.0f, 0.0f, 0.25f);
 
         node.setParent(this);
         node.setLocalPosition(new Vector3(pose.tx(), pose.ty(), pose.tz()));

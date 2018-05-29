@@ -2,20 +2,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AugmentedImageActivity">
+    tools:context=".MainActivity">
 
     <com.google.ar.sceneform.ArSceneView
         android:id="@+id/surfaceview"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
-    <ImageView
-        android:id="@+id/image_view_fit_to_scan"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:contentDescription="@string/fit_image_to_scan"
-        android:scaleType="fitCenter"
-        android:src="@drawable/fit_to_scan" />
 
 </FrameLayout>

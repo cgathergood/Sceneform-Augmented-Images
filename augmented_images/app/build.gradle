@@ -35,8 +35,12 @@ dependencies {
 
 apply plugin: 'com.google.ar.sceneform.plugin'
 
-
-sceneform.asset('sampledata/models/NOVELO_EARTH.obj',
+sceneform.asset('sampledata/model.gltf',
         'default',
-        'sampledata/models/NOVELO_EARTH.sfa',
+        'sampledata/model.sfa',
+        'src/main/assets/model')
+
+sceneform.asset('sampledata/NOVELO_EARTH.obj',
+        'default',
+        'sampledata/NOVELO_EARTH.sfa',
         'src/main/assets/NOVELO_EARTH')
