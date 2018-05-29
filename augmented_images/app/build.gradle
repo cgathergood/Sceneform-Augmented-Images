@@ -39,8 +39,3 @@ sceneform.asset('sampledata/model.gltf',
         'default',
         'sampledata/model.sfa',
         'src/main/assets/model')
-
-sceneform.asset('sampledata/NOVELO_EARTH.obj',
-        'default',
-        'sampledata/NOVELO_EARTH.sfa',
-        'src/main/assets/NOVELO_EARTH')
